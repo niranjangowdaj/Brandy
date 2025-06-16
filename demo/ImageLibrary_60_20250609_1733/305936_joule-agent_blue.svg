@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96.21 96.21">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: #0070f2;
+      }
+
+      .cls-2 {
+        opacity: 0;
+      }
+    </style>
+  </defs>
+  <g id="Icons_16px" data-name="Icons 16px">
+    <g id="joule-agent">
+      <rect class="cls-2" width="96.21" height="96.21"/>
+      <path class="cls-1" d="M61.72,50.1c-6.52,2.2-9.42,5.1-11.63,11.62-.64,1.89-3.33,1.89-3.97,0-2.21-6.52-5.1-9.42-11.63-11.62-1.89-.64-1.89-3.35,0-3.99,6.52-2.2,9.42-5.1,11.63-11.62.64-1.89,3.33-1.89,3.97,0,2.21,6.52,5.1,9.42,11.63,11.62,1.89.64,1.89,3.35,0,3.99Z"/>
+    </g>
+  </g>
+</svg>
