@@ -15,17 +15,15 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 st.set_page_config(page_title="Brandy", layout="wide", initial_sidebar_state="expanded")
 
-# Header with title and clear chat button
 col1, col2 = st.columns([4, 1])
 with col1:
-    st.title("Brandy - Your Brand Assistant")
+    st.title("Brandy Chatbot - Brand compliance assistant")
 with col2:
-    st.write("")  # Add some spacing
     if st.button("🗑️ Clear Chat", help="Clear chat history"):
         st.session_state.chat_history = []
         st.rerun()
 
-FOOTER_FONT = "SAP 72"
+FOOTER_FONT = "72 Brand"
 FOOTER_SIZE = 8
 
 BRAND_GUIDELINES_PATH = "Project Brandy - Brand Guidelines for PPTs.docx"
@@ -51,7 +49,6 @@ if "links_df" not in st.session_state:
 if "links_embeddings" not in st.session_state:
     st.session_state.links_embeddings = None
 
-# Gemini API key
 gemini_api_key = ""
 
 def load_embeddings_and_chunks(prefix):
@@ -171,7 +168,7 @@ def add_green_border(shape):
     except Exception:
         pass
 
-def add_footer_to_slide(slide, text):
+def add_footer_to_slide(slide, text, font_color=None):
     left = Inches(0.2) 
     width = Inches(8)  
     height = Inches(0.4)
@@ -184,6 +181,28 @@ def add_footer_to_slide(slide, text):
     run.text = text
     run.font.name = FOOTER_FONT
     run.font.size = Pt(FOOTER_SIZE)
+    if font_color:
+        run.font.color.rgb = font_color
+
+def add_footer_with_hidden_copyright(slide, visible_text):
+    left = Inches(0.2) 
+    width = Inches(8)  
+    height = Inches(0.4)
+    top = Inches(7.0) 
+    textbox = slide.shapes.add_textbox(left, top, width, height)
+    text_frame = textbox.text_frame
+    p = text_frame.paragraphs[0]
+    
+    visible_run = p.add_run()
+    visible_run.text = visible_text
+    visible_run.font.name = FOOTER_FONT
+    visible_run.font.size = Pt(FOOTER_SIZE)
+    
+    hidden_run = p.add_run()
+    hidden_run.text = " ©"
+    hidden_run.font.name = FOOTER_FONT
+    hidden_run.font.size = Pt(FOOTER_SIZE)
+    hidden_run.font.color.rgb = RGBColor(255, 255, 255)
 
 def add_summary_slide(prs, issues):
     title_slide_layout = prs.slide_layouts[0]
@@ -248,9 +267,15 @@ def pptx_compliance_check_with_rules(pptx_file, rules, add_copyright, copyright_
     slide_comments = {}
     
     if add_copyright:
-        copyright_text = "© SAP SE or an SAP affiliate company. All rights reserved. Internal Use Only." if copyright_type == "Internal" else "© SAP SE or an SAP affiliate company. All rights reserved. Public Use."
-        for slide in prs.slides:
-            add_footer_to_slide(slide, copyright_text)
+        footer_text = "Internal Use Only." if copyright_type == "Internal" else "Public Use."
+        copyright_text = "© SAP SE or an SAP affiliate company. All rights reserved."
+        
+        total_slides = len(prs.slides)
+        for slide_idx, slide in enumerate(prs.slides):
+            if slide_idx == total_slides - 1:  
+                add_footer_to_slide(slide, copyright_text)
+            else: 
+                add_footer_with_hidden_copyright(slide, footer_text)
     
     for slide_idx, slide in enumerate(prs.slides, 1):
         slide_issue_comments = []
@@ -284,8 +309,8 @@ def pptx_compliance_check_with_rules(pptx_file, rules, add_copyright, copyright_
                     except Exception:
                         pass
                     
-                    if implement_actions:
-                        run.font.name = "SAP 72"
+                    if implement_actions and "Internal Use Only." not in element_info["text"] and "Public Use." not in element_info["text"]:
+                        run.font.name = "72 Brand"
                         
                         if current_size is not None and current_size < 11:
                             run.font.size = Pt(11)
@@ -305,7 +330,7 @@ def pptx_compliance_check_with_rules(pptx_file, rules, add_copyright, copyright_
                     }
                     element_info["font_details"].append(font_info)
             
-            if("©" not in element_info["text"] and element_info["text"] != ""):
+            if("©" not in element_info["text"] and "Internal Use Only." not in element_info["text"] and "Public Use." not in element_info["text"]):
                 is_compliant, compliance_message = check_element_compliance(str(element_info), st.session_state.gemini_model)
                 
                 if not is_compliant:
@@ -352,7 +377,7 @@ if uploaded_file:
         
         implement_actions = st.sidebar.checkbox(
             "Implement Actions",
-            help="Automatically fix font and size issues (SAP 72 font and minimum 11pt size)"
+            help="Automatically fix font and size issues (SAP 72 Brand font and minimum 11pt size)"
         )
         
         if st.sidebar.button("Run Compliance Check"):
